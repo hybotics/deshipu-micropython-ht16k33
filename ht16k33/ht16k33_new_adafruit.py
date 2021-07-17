@@ -1,3 +1,4 @@
+from bus_device import i2c_device
 
 _HT16K33_BLINK_CMD = const(0x80)
 _HT16K33_BLINK_DISPLAYON = const(0x01)
@@ -6,7 +7,7 @@ _HT16K33_OSCILATOR_ON = const(0x21)
 
 class HT16K33:
     """The base class for all HT16K33-based backpacks and wings."""
-
+    '''
     def __init__(self, i2c, address=0x70):
         self.i2c = i2c
         self.address = address
@@ -16,16 +17,28 @@ class HT16K33:
         self._write_cmd(_HT16K33_OSCILATOR_ON)                # Error
         self.blink_rate(0)
         self.brightness(15)
-
+    '''
+    def __init__(self, i2c, address=0x70, auto_write=True, brightness=1.0):
+        self.i2c_device = i2c_device.I2CDevice(i2c, address)
+        self._temp = bytearray(1)
+        self._buffer = bytearray(17)
+        self._auto_write = auto_write
+        self.fill(0)
+        self._write_cmd(_HT16K33_OSCILATOR_ON)
+        self._blink_rate = None
+        self._brightness = None
+        self.blink_rate = 0
+        self.brightness = brightness
+    
     '''
     def _write_cmd(self, byte):
         """Send a command."""
         self._temp[0] = byte
         self.i2c.writeto(self.address, self._temp)            # Error
     '''
-
     def _write_cmd(self, byte):
         self._temp[0] = byte
+
         with self.i2c_device:
             self.i2c_device.write(self._temp)
 
@@ -67,5 +80,3 @@ class HT16K33:
         else:
             self.buffer[y * 2] &= ~(mask & 0xff)
             self.buffer[y * 2 + 1] &= ~(mask >> 8)
-
-

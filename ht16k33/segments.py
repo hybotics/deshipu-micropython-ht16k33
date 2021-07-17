@@ -1,11 +1,4 @@
-from micropython import const
-from ht16k33.ht16k33 import HT16K33
-
-_HT16K33_BLINK_CMD = const(0x80)
-_HT16K33_BLINK_DISPLAYON = const(0x01)
-_HT16K33_CMD_BRIGHTNESS = const(0xE0)
-_HT16K33_OSCILATOR_ON = const(0x21)
-
+from ht16k33 import ht16k33
 
 CHARS = (
     0b00000000, 0b00000000, #
@@ -126,7 +119,7 @@ NUMBERS = (
 )
 
 
-class Seg14x4(HT16K33):
+class Seg14x4(ht16k33.HT16K33):
     """The alpha-numeric 14-segment display."""
 
     def print(self, value, decimal=0):

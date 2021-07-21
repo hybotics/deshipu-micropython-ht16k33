@@ -5,21 +5,44 @@
 # This example and library is meant to work with Adafruit CircuitPython API.
 # Author: Tony DiCola
 # License: Public Domain
-
-from ht16k33 import segments
-from machine import I2C, Pin
-from time import sleep
+from micropython import const
+from utime import sleep
 
 # Import all board pins.
-
-TP_SDA = Pin(21)
-TP_SCL = Pin(22) 
-
+from machine import SoftI2C, Pin
 # Import the HT16K33 LED segment module.
+from ht16k33 import segments
+# Import special stuff for tinyPico
+from tinypico import I2C_SDA, I2C_SCL
 
+LED_YELLOW = const(4)
+LED_GREEN = const(5)
+LED_BLINK_RATE_SEC = 0.2
+LED_NR_CYCLES = 1
+
+TP_SDA = Pin(I2C_SDA)
+TP_SCL = Pin(I2C_SCL) 
+
+DELAY_BETWEEN_SEC = 4
+
+led_yellow = Pin(LED_YELLOW, Pin.OUT)
+led_yellow.value(False)
+
+led_green = Pin(LED_GREEN, Pin.OUT)
+led_green.value(False)
+
+def blink_led(led, cycles=LED_NR_CYCLES, rate_ms=LED_BLINK_RATE_SEC):
+  for cyc in range(cycles):
+    led.value(True)
+    sleep(rate_ms)
+    led.value(False) 
+    sleep(rate_ms)
+
+blink_led(led_yellow, 2)
+blink_led(led_green, 2)
 
 # Create the I2C interface.
-i2c = I2C(sda=TP_SDA, scl=TP_SCL, freq=400000)
+i2c = SoftI2C(sda=TP_SDA, scl=TP_SCL, freq=400000)
 
 # Create the LED segment class.
 # This creates a 7 segment 4 character display:
@@ -33,20 +56,36 @@ display = segments.Seg14x4(i2c)
 
 # Clear the display.
 display.fill(0)
+sleep(DELAY_BETWEEN_SEC)
 
-# Can just print a number
-display.print(42)
-sleep(2)
+# Can just print an integer number
+int_number = 4224
+display.print(int_number)
+sleep(DELAY_BETWEEN_SEC)
+display.fill(0)
+
+# Can just print a floating point number
+float_number = 1.23
+print("Printing a floating point number {0}".format(float_number))
+display.print(float_number)
+sleep(DELAY_BETWEEN_SEC)
+display.fill(0)
 
 # Or, can print a hexadecimal value
-display.print_hex(0xFF23)
-sleep(2)
+hex_number = 0xcb69
+print("Printing a hexadecimal number {0}".format(hex(hex_number)))
+display.print_hex(hex_number)
+sleep(DELAY_BETWEEN_SEC)
+display.fill(0)
 
 # Or, print the time
-display.print("12:30")
-sleep(2)
-
+time_string = "12:30"
+print("Printing a time - '{0}'".format(time_string))
+display.colon = True
+display.print(time_string)
+sleep(DELAY_BETWEEN_SEC)
 display.colon = False
+display.fill(0)
 
 # Or, can set indivdual digits / characters
 # Set the first character to '1':
@@ -57,7 +96,8 @@ display[1] = "2"
 display[2] = "A"
 # Set the forth character to 'B':
 display[3] = "B"
-sleep(2)
+sleep(DELAY_BETWEEN_SEC)
+display.fill(0)
 
 # Or, can even set the segments to make up characters
 if isinstance(display, segments.Seg7x4):
@@ -73,7 +113,8 @@ else:
     display.set_digit_raw(2, (0b00101101, 0b00111111))
     display.set_digit_raw(3, [0x2D, 0x3F])
 
-sleep(2)
+sleep(DELAY_BETWEEN_SEC)
+display.fill(0)
 
 # Show a looping marquee
 display.marquee("Deadbeef 192.168.100.102... ", 0.2)

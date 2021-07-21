@@ -42,7 +42,6 @@ class I2CDevice:
     """
 
     def __init__(self, i2c, device_address, probe=True):
-
         self.i2c = i2c
         self.device_address = device_address
 
@@ -81,7 +80,7 @@ class I2CDevice:
         """
         if end is None:
             end = len(buf)
-        self.i2c.writeto(self.device_address, buf, start=start, end=end)
+        self.i2c.writeto(self.device_address, buf)  # TypeError: function doesn't take keyword arguments
 
     # pylint: disable-msg=too-many-arguments
     def write_then_readinto(
@@ -134,12 +133,12 @@ class I2CDevice:
     # pylint: enable-msg=too-many-arguments
 
     def __enter__(self):
-        while not self.i2c.try_lock():
-            pass
+        # while not self.i2c.try_lock():
+        #     pass
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.i2c.unlock()
+        # self.i2c.unlock()
         return False
 
     def __probe_for_device(self):
@@ -148,8 +147,8 @@ class I2CDevice:
         if you get an OSError it means the device is not there
         or that the device does not support these means of probing
         """
-        while not self.i2c.try_lock():
-            pass
+        # while not self.i2c.try_lock():
+        #     pass
         try:
             self.i2c.writeto(self.device_address, b"")
         except OSError:
@@ -162,5 +161,5 @@ class I2CDevice:
                 # pylint: disable=raise-missing-from
                 raise ValueError("No I2C device at address: 0x%x" % self.device_address)
                 # pylint: enable=raise-missing-from
-        finally:
-            self.i2c.unlock()
+        # finally:
+        #     self.i2c.unlock()

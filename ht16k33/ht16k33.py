@@ -16,7 +16,6 @@ class HT16K33:
 
     def __init__(self, i2c, address=0x70, auto_write=True, brightness=1.0):
         self.i2c_device = i2c_device.I2CDevice(i2c, address)
-        # self.address = address
         self._temp = bytearray(1)
         self._buffer = bytearray(17)
         self._auto_write = auto_write
@@ -26,6 +25,7 @@ class HT16K33:
         self._brightness = None
         self.blink_rate = 0
         self.brightness = brightness
+        self.fill(0)
 
     def _write_cmd(self, byte):
         self._temp[0] = byte

@@ -123,6 +123,13 @@ NUMBERS = (
 class Seg14x4(HT16K33):
     """Alpha-numeric, 14-segment display."""
 
+    POSITIONS = (0, 2, 6, 8)  #  The positions of characters.
+
+    def __init__(self, i2c, address=0x70, auto_write=True):
+        super().__init__(i2c, address, auto_write)
+        # Use colon for controling two-dots indicator at the center (index 0)
+        self._colon = Colon(self)
+
     def print(self, value, decimal=0):
         """Print the value to the display."""
         if isinstance(value, (str)):
@@ -199,6 +206,7 @@ class Seg14x4(HT16K33):
         self._auto_write = False
         stnum = str(number)
         dot = stnum.find(".")
+        colon_pos = stnum.find(":")
 
         if (len(stnum) > 5) or ((len(stnum) > 4) and (dot < 0)):
             raise ValueError(
@@ -284,6 +292,15 @@ class Seg14x4(HT16K33):
             char_is_dot = character == "."
             self.show()
 
+    @property
+    def colon(self):
+        """Simplified colon accessor"""
+        return self._colon[0]
+
+    @colon.setter
+    def colon(self, turn_on):
+        self._colon[0] = turn_on
+
 
 class Seg7x4(Seg14x4):
     """Numeric 7-segment display. It has the same methods as the alphanumeric display, but only
@@ -343,6 +360,7 @@ class Seg7x4(Seg14x4):
             return
         else:
             return
+
         self._set_buffer(index, NUMBERS[character])
 
     def set_digit_raw(self, index, bitmask):
@@ -444,11 +462,14 @@ class Colon:
     def __setitem__(self, key, value):
         if key > self._num_of_colons - 1:
             raise ValueError("Trying to set a non-existent colon.")
+
         current = self._disp._get_buffer(0x04)
+
         if value:
             self._disp._set_buffer(0x04, current | self.MASKS[key])
         else:
             self._disp._set_buffer(0x04, current & ~self.MASKS[key])
+
         if self._disp.auto_write:
             self._disp.show()
 
